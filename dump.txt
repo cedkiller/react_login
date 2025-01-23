@@ -1,0 +1,60 @@
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import axios
+import './Home.css';
+
+function Home() {
+    const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [pass, setPass] = useState("");
+
+    const login = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await axios.post('http://localhost:5000/login_record', { email, pass });
+            const { token } = response.data;
+            localStorage.setItem('token', token); // Store token in local storage
+            navigate('/Dashboard'); // Navigate to Dashboard
+        } catch (error) {
+            console.error('Login failed:', error);
+        }
+    }
+
+    const signup = async () => {
+        navigate('/Signup');
+    }
+
+    return (
+        <>
+            <br />
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <div className='div'>
+                    <h1 style={{ textAlign: 'center', fontSize: 20, fontWeight: 'bold' }}>Login</h1>
+                    <br />
+                    <form onSubmit={login}>
+                        <div className="form-group row">
+                            <label className="col-sm-2 col-form-label">Email</label>
+                            <div className="col-sm-10">
+                                <input type="email" className="form-control" placeholder='Enter your email' value={email} onChange={(e) => setEmail(e.target.value)} />
+                            </div>
+                        </div>
+                        <br />
+                        <div className="form-group row">
+                            <label className="col-sm-2 col-form-label">Password</label>
+                            <div className="col-sm-10">
+                                <input type="password" className="form-control" value={pass} onChange={(e) => setPass(e.target.value)} />
+                            </div>
+                        </div>
+                        <br />
+                        <button className="btn btn-primary w-100">Login</button>
+                    </form>
+                    <br />
+                    <button className="btn btn-light w-100" onClick={signup}>Sign Up</button>
+                </div>
+            </div>
+        </>
+    );
+}
+
+export default Home;
