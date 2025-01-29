@@ -26,7 +26,9 @@ app.get('/record', (req, res) => {
         if (results.length === 0) {
             return res.status(401).json({ message: 'Error' });
         }
-        res.json(results);
+        res.json({
+            results
+        });
     });
 });
 
@@ -41,7 +43,9 @@ app.post('/signup_rec', async (req, res) => {
         if (results.length === 0) {
             return res.status(401).json({ message: 'Error' });
         }
-        res.json({ message: 'success' });
+        res.json({ 
+            message: 'success' 
+        });
     });
 });
 
@@ -66,16 +70,16 @@ app.post('/login_rec', (req, res) => {
             {
                 res.json({ 
                     message: 'admin',
-                    user_id: user_id,
-                    user_name: user_name,
-                    user_type: user_type
+                    user_id,
+                    user_name,
+                    user_type
                 });
             } else if (user_type === "user") {
                 res.json({ 
                     message: 'user',
-                    user_id: user_id,
-                    user_name: user_name,
-                    user_type: user_type
+                    user_id,
+                    user_name,
+                    user_type
                 });
             }
         }
