@@ -1,43 +1,58 @@
-import React, {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import './Home.css';
+import React, {useState, useEffect} from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import './Style.css';
 
-function Home () {
+function Home() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [pass, setPass] = useState("");
 
-    const login = async (e) => {
+    const submit = async (e) => {
         e.preventDefault();
-        const response = await axios.post(`http://localhost:5000/login_record`, {email, pass});
+        
+        try {
+            const response = await axios.post('http://localhost:5000/login_rec',{email, pass});
 
-        if (response.data.message === "admin")
-        {
-            navigate('/Admin');
-        }
-
-        else if (response.data.message === "user")
-        {
-            navigate('/User');
-        }
-
-        else if (response.data.message === "Invalid")
-        {
-            Swal.fire({
-                title:'Invalid Email or Password',
-                text:'The email or password is incorrect',
-                icon:'error'
-            })
-        }
-
-        else {
-            Swal.fire({
-                title:'Account Not Registered',
-                text:'The account has not been registered',
-                icon:'error'
-            })
+            if (response.data.message === "admin")
+            {
+                localStorage.setItem('user_id',response.data.user_id);
+                localStorage.setItem('user_name',response.data.user_name);
+                localStorage.setItem('user_type',response.data.user_type);
+                
+                navigate('/Admin');
+            } else if (response.data.message === "user") {
+                localStorage.setItem('user_id',response.data.user_id);
+                localStorage.setItem('user_name',response.data.user_name);
+                localStorage.setItem('user_type',response.data.user_type);
+                
+                navigate('/User');
+            } else if (response.data.message === "invalid password") {
+                Swal.fire({
+                    title:'Invalid Password',
+                    text:'Your password is invalid please try again',
+                    icon:'error'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        setEmail("");
+                        setPass("");
+                    }
+                })
+            }
+        } catch (error) {
+            if (error.response.data.message === "Error") {
+                Swal.fire({
+                    title:'Email Not Registered',
+                    text:'Your email is not registered in the system please sign up',
+                    icon:'error'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        setEmail("");
+                        setPass("");
+                    }
+                })
+            }
         }
     }
 
@@ -47,12 +62,11 @@ function Home () {
     return (
         <>
         <br />
-
         <div style={{display:'flex', justifyContent:'center'}}>
             <div className='div'>
                 <h1 style={{textAlign:'center', fontSize:20, fontWeight:'bold'}}>Login</h1>
                 <br />
-                <form onSubmit={login}>
+                <form onSubmit={submit}>
                     <div class="form-group row">
                         <label class="col-sm-2 col-form-label">Email</label>
                         <div class="col-sm-10">

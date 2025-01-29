@@ -17,65 +17,74 @@ const pool = mysql.createPool({
 
 //start
 // Get records
-app.get('/get_user', (req, res) => {
+app.get('/record', (req, res) => {
     pool.query('SELECT * FROM user', (error, results) => {
         if (error) {
             console.error('Error fetching records:', error);
             return res.status(500).json({ message: 'Error fetching records' });
         }
+        if (results.length === 0) {
+            return res.status(401).json({ message: 'Error' });
+        }
         res.json(results);
     });
 });
 
-// Add a record
-app.post('/signup_record', async (req, res) => {
+app.post('/signup_rec', async (req, res) => {
     const { name, email, pass, type } = req.body;
-    try {
-        const hashPass = await bcrypt.hash(pass, 10);
-        pool.query('INSERT INTO user (user_name, user_email, user_password, user_type) VALUES (?,?,?,?)', [name, email, hashPass, type], (error) => {
-            if (error) {
-                console.error('Error adding record:', error);
-                return res.status(500).json({ message: 'Error adding record' });
-            }
-            res.json({ message: 'signup success' });
-        });
-    } catch (error) {
-        console.error('Error hashing password:', error);
-        res.status(500).json({ message: 'Error hashing password' });
-    }
+    const hashPass = await bcrypt.hash(pass, 10);
+    pool.query('INSERT INTO user(user_name, user_email, user_password, user_type) VALUES(?,?,?,?)', [name, email, hashPass, type], (error, results) => {
+        if (error) {
+            console.error('Error adding record:', error);
+            return res.status(500).json({ message: 'Error adding record' });
+        }
+        if (results.length === 0) {
+            return res.status(401).json({ message: 'Error' });
+        }
+        res.json({ message: 'success' });
+    });
 });
 
-app.post('/login_record', (req, res) => {
+app.post('/login_rec', (req, res) => {
     const { email, pass } = req.body;
     pool.query('SELECT * FROM user WHERE user_email = ?', [email], (error, results) => {
         if (error) {
             console.error('Error adding record:', error);
             return res.status(500).json({ message: 'Error adding record' });
         }
-
         if (results.length === 0) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Error' });
         }
         
-        const password = results[0].user_password;
-
-        if (bcrypt.compare(pass, password))
+        if (bcrypt.compare(pass, results[0].user_password))
         {
-            const type = results[0].user_type;
+            const user_id = results[0].user_id;
+            const user_name = results[0].user_name;
+            const user_type = results[0].user_type;
 
-            if (type === 'admin')
+            if (user_type === "admin")
             {
-                res.json({ message: 'admin' });
+                res.json({ 
+                    message: 'admin',
+                    user_id: user_id,
+                    user_name: user_name,
+                    user_type: user_type
+                });
+            } else if (user_type === "user") {
+                res.json({ 
+                    message: 'user',
+                    user_id: user_id,
+                    user_name: user_name,
+                    user_type: user_type
+                });
             }
+        }
 
-            else if (type === 'user')
-            {
-                res.json({ message: 'user' });
-            }
+        else {
+            res.json({ message: 'invalid password' });
         }
     });
 });
-
 //end
 
 // Start server
