@@ -60,33 +60,25 @@ app.post('/login_rec', (req, res) => {
             return res.status(401).json({ message: 'Error' });
         }
         
-        if (bcrypt.compare(pass, results[0].user_password))
-        {
-            const user_id = results[0].user_id;
-            const user_name = results[0].user_name;
-            const user_type = results[0].user_type;
-
-            if (user_type === "admin")
+        bcrypt.compare(pass, results.[0].user_password, (err, isMatch) => {
+            if (isMatch)
             {
-                res.json({ 
-                    message: 'admin',
-                    user_id,
-                    user_name,
-                    user_type
-                });
-            } else if (user_type === "user") {
-                res.json({ 
-                    message: 'user',
-                    user_id,
+                const user_name = results.[0].user_name;
+                const user_type = results.[0].user_type;
+
+                res.json({
+                    message:'success',
                     user_name,
                     user_type
                 });
             }
-        }
 
-        else {
-            res.json({ message: 'invalid password' });
-        }
+            else {
+                res.json({
+                    message:'Invalid Password'
+                });
+            }
+        });
     });
 });
 //end
